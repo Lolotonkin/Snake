@@ -2,13 +2,15 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Snake Cyberpunk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Snake Cyberpunk - Par Laurent</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
         }
         body {
             background-color: #050508;
@@ -17,44 +19,56 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             min-height: 100vh;
-            margin: 0;
-            padding: 15px;
+            height: 100vh;
+            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
             touch-action: none;
             overflow: hidden;
         }
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 360px;
+        .header {
+            text-align: center;
+            margin-top: 10px;
         }
         h1 {
-            margin: 0 0 15px 0;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: #39ff14;
             text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
         }
-        h1 span {
-            color: #fff;
-            text-shadow: none;
+        /* Signature Laurent intégrée */
+        .credits {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #8f9cae;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+        .credits span {
+            color: #39ff14;
+            font-weight: bold;
+        }
+        .game-area {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 340px;
         }
         canvas {
             background-color: #0b0c10;
             border: 3px solid #1f2833;
             border-radius: 16px;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(57, 255, 20, 0.05);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
             width: 100%;
             aspect-ratio: 1 / 1;
         }
-        /* Design de la manette */
         .controls {
-            margin-top: 25px;
+            margin-bottom: 20px;
             display: grid;
             grid-template-columns: repeat(3, 75px);
             grid-template-rows: repeat(3, 75px);
@@ -71,11 +85,8 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 5px 10px rgba(0,0,0,0.4);
-            transition: all 0.1s ease;
         }
-        /* Activation Néon lors de l'appui */
         .btn:active {
-            transform: scale(0.92);
             background: #0d1117;
             color: #39ff14;
             border-color: #39ff14;
@@ -88,16 +99,20 @@
     </style>
 </head>
 <body>
-    <div class="game-container">
+    <div class="header">
         <h1>Score: <span id="score">0</span></h1>
+        <div class="credits">Un jeu créé par <span>Laurent</span></div>
+    </div>
+
+    <div class="game-area">
         <canvas id="gameCanvas" width="300" height="300"></canvas>
-        
-        <div class="controls">
-            <div class="btn" id="up">▲</div>
-            <div class="btn" id="left">◀</div>
-            <div class="btn" id="right">▶</div>
-            <div class="btn" id="down">▼</div>
-        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="btn" id="up">▲</div>
+        <div class="btn" id="left">◀</div>
+        <div class="btn" id="right">▶</div>
+        <div class="btn" id="down">▼</div>
     </div>
 
     <script>
@@ -107,16 +122,22 @@
         let tileCount = canvas.width / gridSize;
         
         let snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
-        let velocity = {x: 0, y: -1}; // Démarre vers le haut directement
+        let velocity = {x: 0, y: -1};
         let apple = {x: 5, y: 5};
         let score = 0;
         let gameOver = false;
         let pulse = 0;
 
+        // Mode plein écran automatique au premier clic/toucher
+        function enableFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        }
+
         function gameLoop() {
             pulse += 0.1;
             if (gameOver) {
-                // Écran de défaite stylé
                 ctx.fillStyle = "rgba(5, 5, 8, 0.85)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
@@ -130,7 +151,7 @@
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = "#8f9cae";
                 ctx.font = "14px sans-serif";
-                ctx.fillText("Touche le jeu pour rejouer", canvas.width/2, canvas.height/2 + 20);
+                ctx.fillText("Touche ici pour rejouer", canvas.width/2, canvas.height/2 + 20);
                 return;
             }
             update();
@@ -180,11 +201,9 @@
         }
 
         function draw() {
-            // Nettoyage et arrière-plan
             ctx.fillStyle = "#0b0c10";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Dessin de la grille technologique discrète
             ctx.strokeStyle = "rgba(31, 40, 51, 0.3)";
             ctx.lineWidth = 1;
             for (let i = 0; i <= tileCount; i++) {
@@ -192,7 +211,6 @@
                 ctx.beginPath(); ctx.moveTo(0, i * gridSize); ctx.lineTo(canvas.width, i * gridSize); ctx.stroke();
             }
 
-            // Dessin de la Pomme Néon (avec effet de pulsation)
             let appleRadius = (gridSize / 2 - 2) + Math.sin(pulse) * 0.8;
             ctx.shadowBlur = 12 + Math.sin(pulse) * 4;
             ctx.shadowColor = "#ff3366";
@@ -201,14 +219,12 @@
             ctx.arc(apple.x * gridSize + gridSize/2, apple.y * gridSize + gridSize/2, appleRadius, 0, Math.PI*2);
             ctx.fill();
 
-            // Dessin du Serpent Cyber
             for (let i = 0; i < snake.length; i++) {
-                let radius = i === 0 ? 6 : 4; // Tête plus arrondie
+                let radius = i === 0 ? 6 : 4;
                 ctx.shadowBlur = i === 0 ? 15 : 8;
                 ctx.shadowColor = "#39ff14";
                 ctx.fillStyle = i === 0 ? "#66ff66" : "#39ff14";
                 
-                // Tracé de chaque bloc arrondi
                 let x = snake[i].x * gridSize + 1;
                 let y = snake[i].y * gridSize + 1;
                 let w = gridSize - 2;
@@ -218,26 +234,23 @@
                 ctx.roundRect(x, y, w, h, radius);
                 ctx.fill();
 
-                // Ajout des petits yeux stylisés sur la tête
                 if (i === 0) {
                     ctx.shadowBlur = 0;
                     ctx.fillStyle = "#000";
-                    // Positions adaptées sommairement au centre
                     ctx.fillRect(x + 3, y + 5, 2, 2);
                     ctx.fillRect(x + 8, y + 5, 2, 2);
                 }
             }
-            // Reset des ombres pour éviter les bugs de performance
             ctx.shadowBlur = 0;
         }
 
         function changeDirection(x, y) {
+            enableFullscreen();
             if (x !== 0 && velocity.x !== 0) return;
             if (y !== 0 && velocity.y !== 0) return;
             velocity = {x, y};
         }
 
-        // Ecouteurs tactiles réactifs
         document.getElementById("up").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, -1); });
         document.getElementById("down").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, 1); });
         document.getElementById("left").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(-1, 0); });
@@ -245,6 +258,7 @@
 
         canvas.addEventListener("touchstart", (e) => {
             e.preventDefault();
+            enableFullscreen();
             if (gameOver) {
                 snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
                 velocity = {x: 0, y: -1};
