@@ -2,112 +2,28 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Snake Cyberpunk - Par Laurent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake - Laurent</title>
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background-color: #050508;
-            color: #fff;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 100vh;
-            height: 100vh;
-            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
-            touch-action: none;
-            overflow: hidden;
-        }
-        .header {
-            text-align: center;
-            margin-top: 10px;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #39ff14;
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
-        }
-        /* Signature Laurent intégrée */
-        .credits {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: #8f9cae;
-            opacity: 0.7;
-            margin-top: 2px;
-        }
-        .credits span {
-            color: #39ff14;
-            font-weight: bold;
-        }
-        .game-area {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 340px;
-        }
-        canvas {
-            background-color: #0b0c10;
-            border: 3px solid #1f2833;
-            border-radius: 16px;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            aspect-ratio: 1 / 1;
-        }
-        .controls {
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 75px);
-            grid-template-rows: repeat(3, 75px);
-            gap: 12px;
-            justify-content: center;
-        }
-        .btn {
-            background: linear-gradient(145deg, #10141e, #080a0f);
-            border: 2px solid #1f2330;
-            color: #8f9cae;
-            border-radius: 50%;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.4);
-        }
-        .btn:active {
-            background: #0d1117;
-            color: #39ff14;
-            border-color: #39ff14;
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
-        }
-        #up { grid-column: 2; grid-row: 1; }
-        #left { grid-column: 1; grid-row: 2; }
-        #right { grid-column: 3; grid-row: 2; }
-        #down { grid-column: 2; grid-row: 3; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #050508; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .ui { text-align: center; margin-top: 10px; }
+        h1 { margin: 0; font-size: 20px; color: #39ff14; text-transform: uppercase; letter-spacing: 2px; }
+        .sig { font-size: 10px; color: #8f9cae; text-transform: uppercase; margin-top: 5px; }
+        canvas { background: #0b0c10; border: 2px solid #1f2833; border-radius: 12px; width: 90vw; height: 90vw; max-width: 320px; max-height: 320px; }
+        .controls { display: grid; grid-template-columns: repeat(3, 70px); grid-template-rows: repeat(3, 70px); gap: 10px; margin-bottom: 30px; }
+        .btn { background: #10141e; border: 1px solid #39ff14; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #39ff14; font-size: 20px; }
+        #up { grid-column: 2; grid-row: 1; } #left { grid-column: 1; grid-row: 2; } #right { grid-column: 3; grid-row: 2; } #down { grid-column: 2; grid-row: 3; }
     </style>
 </head>
 <body>
-    <div class="header">
+
+    <div class="ui">
         <h1>Score: <span id="score">0</span></h1>
-        <div class="credits">Un jeu créé par <span>Laurent</span></div>
+        <div class="sig">Créé par Laurent</div>
     </div>
 
-    <div class="game-area">
-        <canvas id="gameCanvas" width="300" height="300"></canvas>
-    </div>
-    
+    <canvas id="game" width="300" height="300"></canvas>
+
     <div class="controls">
         <div class="btn" id="up">▲</div>
         <div class="btn" id="left">◀</div>
@@ -116,160 +32,36 @@
     </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const gridSize = 15;
-        let tileCount = canvas.width / gridSize;
-        
-        let snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
-        let velocity = {x: 0, y: -1};
-        let apple = {x: 5, y: 5};
-        let score = 0;
-        let gameOver = false;
-        let pulse = 0;
+        const cvs = document.getElementById("game");
+        const ctx = cvs.getContext("2d");
+        let s = [{x:10,y:10}], v = {x:0,y:-1}, a = {x:5,y:5}, sc = 0, go = false;
 
-        // Mode plein écran automatique au premier clic/toucher
-        function enableFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        }
-
-        function gameLoop() {
-            pulse += 0.1;
-            if (gameOver) {
-                ctx.fillStyle = "rgba(5, 5, 8, 0.85)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = "#ff3366";
-                ctx.fillStyle = "#ff3366";
-                ctx.font = "bold 22px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2 - 10);
-                
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = "#8f9cae";
-                ctx.font = "14px sans-serif";
-                ctx.fillText("Touche ici pour rejouer", canvas.width/2, canvas.height/2 + 20);
-                return;
-            }
-            update();
-            draw();
-            setTimeout(gameLoop, 110);
+        function draw() {
+            ctx.fillStyle = "#0b0c10"; ctx.fillRect(0,0,300,300);
+            ctx.fillStyle = "#ff3366"; ctx.fillRect(a.x*15, a.y*15, 13, 13);
+            ctx.fillStyle = "#39ff14";
+            s.forEach(p => ctx.fillRect(p.x*15, p.y*15, 13, 13));
+            if(go) { ctx.fillStyle="white"; ctx.textAlign="center"; ctx.fillText("APPUYEZ POUR JOUER", 150, 150); }
         }
 
         function update() {
-            if (velocity.x === 0 && velocity.y === 0) return;
-
-            let headX = snake[0].x + velocity.x;
-            let headY = snake[0].y + velocity.y;
-
-            if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
-                gameOver = true;
-                return;
-            }
-
-            for (let i = 0; i < snake.length; i++) {
-                if (snake[i].x === headX && snake[i].y === headY) {
-                    gameOver = true;
-                    return;
-                }
-            }
-
-            snake.unshift({x: headX, y: headY});
-
-            if (headX === apple.x && headY === apple.y) {
-                score++;
-                document.getElementById("score").innerText = score;
-                generateApple();
-            } else {
-                snake.pop();
-            }
+            if(go) return;
+            let head = {x: s[0].x + v.x, y: s[0].y + v.y};
+            if(head.x<0 || head.x>19 || head.y<0 || head.y>19 || s.some(p => p.x==head.x && p.y==head.y)) { go = true; return; }
+            s.unshift(head);
+            if(head.x == a.x && head.y == a.y) { sc++; document.getElementById("score").innerText = sc; a = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)}; }
+            else s.pop();
         }
 
-        function generateApple() {
-            while (true) {
-                apple.x = Math.floor(Math.random() * tileCount);
-                apple.y = Math.floor(Math.random() * tileCount);
-                let onSnake = false;
-                for (let segment of snake) {
-                    if (segment.x === apple.x && segment.y === apple.y) onSnake = true;
-                }
-                if (!onSnake) break;
-            }
-        }
-
-        function draw() {
-            ctx.fillStyle = "#0b0c10";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = "rgba(31, 40, 51, 0.3)";
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= tileCount; i++) {
-                ctx.beginPath(); ctx.moveTo(i * gridSize, 0); ctx.lineTo(i * gridSize, canvas.height); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i * gridSize); ctx.lineTo(canvas.width, i * gridSize); ctx.stroke();
-            }
-
-            let appleRadius = (gridSize / 2 - 2) + Math.sin(pulse) * 0.8;
-            ctx.shadowBlur = 12 + Math.sin(pulse) * 4;
-            ctx.shadowColor = "#ff3366";
-            ctx.fillStyle = "#ff3366";
-            ctx.beginPath();
-            ctx.arc(apple.x * gridSize + gridSize/2, apple.y * gridSize + gridSize/2, appleRadius, 0, Math.PI*2);
-            ctx.fill();
-
-            for (let i = 0; i < snake.length; i++) {
-                let radius = i === 0 ? 6 : 4;
-                ctx.shadowBlur = i === 0 ? 15 : 8;
-                ctx.shadowColor = "#39ff14";
-                ctx.fillStyle = i === 0 ? "#66ff66" : "#39ff14";
-                
-                let x = snake[i].x * gridSize + 1;
-                let y = snake[i].y * gridSize + 1;
-                let w = gridSize - 2;
-                let h = gridSize - 2;
-                
-                ctx.beginPath();
-                ctx.roundRect(x, y, w, h, radius);
-                ctx.fill();
-
-                if (i === 0) {
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = "#000";
-                    ctx.fillRect(x + 3, y + 5, 2, 2);
-                    ctx.fillRect(x + 8, y + 5, 2, 2);
-                }
-            }
-            ctx.shadowBlur = 0;
-        }
-
-        function changeDirection(x, y) {
-            enableFullscreen();
-            if (x !== 0 && velocity.x !== 0) return;
-            if (y !== 0 && velocity.y !== 0) return;
-            velocity = {x, y};
-        }
-
-        document.getElementById("up").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, -1); });
-        document.getElementById("down").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, 1); });
-        document.getElementById("left").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(-1, 0); });
-        document.getElementById("right").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(1, 0); });
-
-        canvas.addEventListener("touchstart", (e) => {
+        document.querySelectorAll('.btn').forEach(b => b.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            enableFullscreen();
-            if (gameOver) {
-                snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
-                velocity = {x: 0, y: -1};
-                score = 0;
-                document.getElementById("score").innerText = score;
-                gameOver = false;
-                gameLoop();
-            }
-        });
+            if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            if(b.id=='up' && v.y==0) v={x:0,y:-1}; if(b.id=='down' && v.y==0) v={x:0,y:1};
+            if(b.id=='left' && v.x==0) v={x:-1,y:0}; if(b.id=='right' && v.x==0) v={x:1,y:0};
+        }));
 
-        gameLoop();
+        cvs.addEventListener('touchstart', () => { if(go) { s=[{x:10,y:10}]; v={x:0,y:-1}; sc=0; document.getElementById("score").innerText=0; go=false; } });
+        setInterval(() => { update(); draw(); }, 120);
     </script>
 </body>
 </html>
