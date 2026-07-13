@@ -6,7 +6,7 @@
     <title>Arcade - Laurent</title>
     <style>
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-        body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
         
         /* Menus */
         .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 400px; padding: 20px; }
@@ -23,19 +23,15 @@
         .btn-s:active { background: #39ff14; color: black; }
         
         /* Tir UI */
-        #tirCanvas { background: linear-gradient(#1a1a2e, #050508); border: 2px solid #1f2833; border-radius: 12px; width: 95vw; max-width: 400px; height: 250px; margin-bottom: 10px; }
-        .tir-ui { width: 95vw; max-width: 400px; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #1e293b; }
-        .info-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; }
-        .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        input[type=range] { width: 60%; accent-color: #39ff14; }
-        .btn-fire { background: #39ff14; color: #050508; border: none; padding: 15px; width: 100%; font-weight: bold; border-radius: 8px; font-size: 16px; text-transform: uppercase; }
-        .btn-fire.p2 { background: #ff3366; }
+        #tirCanvas { background: linear-gradient(#1a1a2e, #050508); border: 2px solid #1f2833; border-radius: 12px; width: 95vw; max-width: 400px; height: 250px; margin-bottom: 10px; touch-action: none; cursor: crosshair; }
+        .tir-ui { width: 95vw; max-width: 400px; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #1e293b; text-align: center; }
+        .info-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; width: 95vw; max-width: 400px;}
+        #aim-inst { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .back-btn { margin-top: 15px; background: transparent; border: 1px solid #8f9cae; color: #8f9cae; padding: 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- ECRAN D'ACCUEIL -->
     <div id="screen-main" class="screen active">
         <h1>Arcade Mobile</h1>
         <div class="sig">Créé par Laurent</div>
@@ -43,7 +39,6 @@
         <button class="btn-menu" onclick="showScreen('screen-tir-menu')">Jeu de Tir (Castle Siege)</button>
     </div>
 
-    <!-- MENU JEU DE TIR -->
     <div id="screen-tir-menu" class="screen">
         <h1>Castle Siege</h1>
         <button class="btn-menu" onclick="startTir('1v1')">Mode 1 vs 1</button>
@@ -53,7 +48,6 @@
         <button class="back-btn" onclick="showScreen('screen-main')">Retour</button>
     </div>
 
-    <!-- ECRAN SNAKE -->
     <div id="screen-snake" class="screen">
         <div style="display:flex; justify-content:space-between; width:100%; max-width:320px;">
             <h2 style="color:#39ff14; margin-bottom:10px;">Score: <span id="snake-score">0</span></h2>
@@ -68,24 +62,15 @@
         <button class="back-btn" onclick="showScreen('screen-main')">Quitter Snake</button>
     </div>
 
-    <!-- ECRAN TIR -->
     <div id="screen-tir" class="screen">
         <div class="info-bar">
-            <span id="hp1" style="color:#39ff14;">Joueur 1: 100%</span>
+            <span id="hp1" style="color:#39ff14;">J1: 100%</span>
             <span id="tour-txt">Tour: J1</span>
-            <span id="hp2" style="color:#ff3366;">Joueur 2: 100%</span>
+            <span id="hp2" style="color:#ff3366;">J2: 100%</span>
         </div>
         <canvas id="tirCanvas" width="400" height="250"></canvas>
         <div class="tir-ui">
-            <div class="slider-row">
-                <span>Angle: <span id="val-angle">45</span>°</span>
-                <input type="range" id="angle" min="10" max="85" value="45" oninput="document.getElementById('val-angle').innerText=this.value">
-            </div>
-            <div class="slider-row">
-                <span>Puissance: <span id="val-power">60</span></span>
-                <input type="range" id="power" min="20" max="100" value="60" oninput="document.getElementById('val-power').innerText=this.value">
-            </div>
-            <button id="btn-fire" class="btn-fire" onclick="fireCannon()">Tirer (J1)</button>
+            <p id="aim-inst" style="color:#39ff14;">Glisse le doigt pour viser !</p>
         </div>
         <button class="back-btn" onclick="showScreen('screen-main')">Quitter la partie</button>
     </div>
@@ -130,12 +115,14 @@
         ctxS.fillStyle = "#39ff14"; s_snake.forEach((p,i) => ctxS.fillRect(p.x*15, p.y*15, 14, 14));
     }
 
-    document.getElementById("up").addEventListener("touchstart", (e)=>{e.preventDefault(); if(v_snake.y==0) v_snake={x:0,y:-1};});
-    document.getElementById("down").addEventListener("touchstart", (e)=>{e.preventDefault(); if(v_snake.y==0) v_snake={x:0,y:1};});
-    document.getElementById("left").addEventListener("touchstart", (e)=>{e.preventDefault(); if(v_snake.x==0) v_snake={x:-1,y:0};});
-    document.getElementById("right").addEventListener("touchstart", (e)=>{e.preventDefault(); if(v_snake.x==0) v_snake={x:1,y:0};});
+    ["up", "down", "left", "right"].forEach(id => {
+        document.getElementById(id).addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            if(id=="up" && v_snake.y==0) v_snake={x:0,y:-1}; else if(id=="down" && v_snake.y==0) v_snake={x:0,y:1};
+            else if(id=="left" && v_snake.x==0) v_snake={x:-1,y:0}; else if(id=="right" && v_snake.x==0) v_snake={x:1,y:0};
+        });
+    });
     cvsSnake.addEventListener('touchstart', ()=>{ if(s_go) initSnake(); });
-
 
     // ==========================================
     // ============ JEU DE TIR ==================
@@ -143,6 +130,9 @@
     const cvsTir = document.getElementById("tirCanvas");
     const ctxT = cvsTir.getContext("2d");
     let tirMode, turn, hp1, hp2, traj1, traj2, isFiring;
+    
+    // Variables pour la visée tactile
+    let isDragging = false, dragStart = {x:0,y:0}, aimAngle = 45, aimPower = 50;
 
     function startTir(mode) {
         tirMode = mode; turn = 1; hp1 = 100; hp2 = 100; traj1 = []; traj2 = []; isFiring = false;
@@ -156,18 +146,14 @@
         document.getElementById('hp2').innerText = (tirMode==='1v1' ? "J2" : "IA") + ": " + hp2 + "%";
         document.getElementById('tour-txt').innerText = "Tour: " + (turn === 1 ? "J1" : (tirMode==='1v1' ? "J2" : "IA"));
         
-        const btn = document.getElementById('btn-fire');
-        const sliderA = document.getElementById('angle');
+        const inst = document.getElementById('aim-inst');
         if(turn === 1) {
-            btn.className = "btn-fire"; btn.innerText = "Tirer (J1)"; btn.disabled = false;
-            sliderA.style.accentColor = "#39ff14"; document.getElementById('power').style.accentColor = "#39ff14";
+            inst.innerText = "Glisse le doigt pour viser ! (J1)"; inst.style.color = "#39ff14";
         } else {
-            btn.className = "btn-fire p2"; 
             if(tirMode === '1v1') {
-                btn.innerText = "Tirer (J2)"; btn.disabled = false;
-                sliderA.style.accentColor = "#ff3366"; document.getElementById('power').style.accentColor = "#ff3366";
+                inst.innerText = "Glisse le doigt pour viser ! (J2)"; inst.style.color = "#ff3366";
             } else {
-                btn.innerText = "Calcul IA..."; btn.disabled = true;
+                inst.innerText = "L'IA calcule son tir..."; inst.style.color = "#8f9cae";
                 setTimeout(iaTurn, 1000);
             }
         }
@@ -184,25 +170,97 @@
         if(hp2 > 0) { ctxT.fillStyle = '#ff3366'; ctxT.fillRect(350, 250 - (hp2*0.6), 30, hp2*0.6); }
 
         // Trajectoires passées
-        ctxT.strokeStyle = 'rgba(57, 255, 20, 0.3)'; ctxT.beginPath();
+        ctxT.strokeStyle = 'rgba(57, 255, 20, 0.3)'; ctxT.lineWidth = 1; ctxT.beginPath();
         traj1.forEach((p, i) => i==0 ? ctxT.moveTo(p.x, p.y) : ctxT.lineTo(p.x, p.y)); ctxT.stroke();
         ctxT.strokeStyle = 'rgba(255, 51, 102, 0.3)'; ctxT.beginPath();
         traj2.forEach((p, i) => i==0 ? ctxT.moveTo(p.x, p.y) : ctxT.lineTo(p.x, p.y)); ctxT.stroke();
+
+        // Ligne de visée (pendant le glissement)
+        if(isDragging) {
+            let startX = turn === 1 ? 50 : 350;
+            let startY = turn === 1 ? 250 - (hp1*0.6) : 250 - (hp2*0.6);
+            if(startY > 240) startY = 240;
+            
+            let drawAng = (turn === 1 ? aimAngle : 180 - aimAngle) * Math.PI / 180;
+            let endX = startX + Math.cos(drawAng) * aimPower;
+            let endY = startY - Math.sin(drawAng) * aimPower;
+            
+            ctxT.strokeStyle = turn === 1 ? '#39ff14' : '#ff3366';
+            ctxT.lineWidth = 3;
+            ctxT.setLineDash([5, 5]);
+            ctxT.beginPath();
+            ctxT.moveTo(startX, startY);
+            ctxT.lineTo(endX, endY);
+            ctxT.stroke();
+            ctxT.setLineDash([]); // Reset
+            ctxT.lineWidth = 1;
+        }
     }
 
-    function fireCannon(forceAngle = null, forcePower = null) {
+    // --- GESTION DU TACTILE POUR LA VISÉE ---
+    function handlePointerDown(e) {
+        if(isFiring || (turn !== 1 && tirMode !== '1v1')) return;
+        e.preventDefault();
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        dragStart = { x: clientX, y: clientY };
+        isDragging = true;
+    }
+
+    function handlePointerMove(e) {
+        if(!isDragging) return;
+        e.preventDefault();
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // Principe du lance-pierre (on tire à l'opposé du mouvement)
+        let dx = dragStart.x - clientX;
+        let dy = dragStart.y - clientY;
+        
+        // Calcul de la puissance (limitée entre 20 et 100)
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        aimPower = Math.min(100, Math.max(20, dist * 0.8));
+        
+        // Calcul de l'angle
+        let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+        
+        if(turn === 1) {
+            if(ang < 0) ang = 0; if(ang > 90) ang = 90; // Bloque entre 0 (droite) et 90 (haut)
+            aimAngle = ang;
+        } else {
+            if(ang > 0 && ang < 90) ang = 90; if(ang < 0) ang = 180; // Bloque pour tirer vers la gauche
+            aimAngle = 180 - ang;
+        }
+        drawTir();
+    }
+
+    function handlePointerUp(e) {
+        if(!isDragging) return;
+        isDragging = false;
+        drawTir();
+        fireCannon(aimAngle, aimPower);
+    }
+
+    // Écouteurs pour le Touch (Mobile) et la Souris (PC)
+    cvsTir.addEventListener('touchstart', handlePointerDown, {passive: false});
+    cvsTir.addEventListener('touchmove', handlePointerMove, {passive: false});
+    window.addEventListener('touchend', handlePointerUp);
+    
+    cvsTir.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
+    function fireCannon(forceAngle, forcePower) {
         if(isFiring) return;
         isFiring = true;
         
-        let aDeg = forceAngle || parseInt(document.getElementById('angle').value);
-        let pwr = forcePower || parseInt(document.getElementById('power').value);
-        
-        // J2 tire dans l'autre sens (miroir)
+        let aDeg = forceAngle;
+        let pwr = forcePower;
         let angleRad = (turn === 1 ? aDeg : 180 - aDeg) * Math.PI / 180;
         
-        let x = turn === 1 ? 50 : 350; // Départ du canon
+        let x = turn === 1 ? 50 : 350;
         let y = turn === 1 ? 250 - (hp1*0.6) : 250 - (hp2*0.6);
-        if (y > 240) y = 240; // Sécurité si château très bas
+        if (y > 240) y = 240;
 
         let vx = Math.cos(angleRad) * pwr / 5;
         let vy = -Math.sin(angleRad) * pwr / 5;
@@ -215,23 +273,18 @@
             drawTir();
             ctxT.fillStyle = 'white'; ctxT.fillRect(x, y, 4, 4);
 
-            // Collisions
             let hit = false;
-            // Sol
-            if(y > 250) hit = true;
-            // Montagne (approximation triangle)
-            if(y > 250 - (50 - Math.abs(x - 200))*3 && x > 150 && x < 250) hit = true; 
-            // Chateau 2
-            if(x > 350 && x < 380 && y > 250 - (hp2*0.6)) { hit = true; if(turn===1) hp2 -= 25; }
-            // Chateau 1
-            if(x > 20 && x < 50 && y > 250 - (hp1*0.6)) { hit = true; if(turn===2) hp1 -= 25; }
+            if(y > 250) hit = true; // Sol
+            if(y > 250 - (50 - Math.abs(x - 200))*3 && x > 150 && x < 250) hit = true; // Montagne
+            if(x > 350 && x < 380 && y > 250 - (hp2*0.6)) { hit = true; if(turn===1) hp2 -= 25; } // Touche J2
+            if(x > 20 && x < 50 && y > 250 - (hp1*0.6)) { hit = true; if(turn===2) hp1 -= 25; } // Touche J1
             
             if(hit || x < -50 || x > 450) {
                 clearInterval(interval);
                 if(turn === 1) traj1 = currentTraj; else traj2 = currentTraj;
                 
-                if(hp1 <= 0) { drawTir(); alert("Le Joueur 2 / IA a détruit le château de Laurent !"); isFiring=false; return; }
-                if(hp2 <= 0) { drawTir(); alert("Laurent a détruit le château adverse !"); isFiring=false; return; }
+                if(hp1 <= 0) { drawTir(); setTimeout(()=>alert("Le Joueur 2 / IA a détruit ton château !"), 100); isFiring=false; return; }
+                if(hp2 <= 0) { drawTir(); setTimeout(()=>alert("Laurent a détruit le château adverse !"), 100); isFiring=false; return; }
                 
                 turn = turn === 1 ? 2 : 1;
                 isFiring = false;
@@ -243,18 +296,9 @@
     function iaTurn() {
         if(hp2 <= 0 || turn === 1) return;
         let ang = 45, pwr = 60;
-        
-        if(tirMode === 'ia-easy') {
-            ang = 20 + Math.random()*50; pwr = 30 + Math.random()*50;
-        } else if (tirMode === 'ia-med') {
-            ang = 35 + Math.random()*20; pwr = 55 + Math.random()*20;
-        } else if (tirMode === 'ia-hard') {
-            // L'IA triche un peu et vise de plus en plus juste
-            ang = 45 + (Math.random()*10 - 5); pwr = 68 + (Math.random()*10 - 5);
-        }
-        
-        document.getElementById('angle').value = ang;
-        document.getElementById('power').value = pwr;
+        if(tirMode === 'ia-easy') { ang = 20 + Math.random()*50; pwr = 30 + Math.random()*50; } 
+        else if (tirMode === 'ia-med') { ang = 35 + Math.random()*20; pwr = 55 + Math.random()*20; } 
+        else if (tirMode === 'ia-hard') { ang = 45 + (Math.random()*10 - 5); pwr = 68 + (Math.random()*10 - 5); }
         fireCannon(ang, pwr);
     }
 </script>
