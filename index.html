@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake Mobile</title>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 10px;
+            touch-action: none;
+        }
+        h1 { margin: 10px 0; font-size: 24px; color: #39ff14; }
+        canvas {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 70px 70px 70px;
+            grid-template-rows: 70px 70px 70px;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #1e1e1e;
+            border: 2px solid #39ff14;
+            color: #39ff14;
+            border-radius: 12px;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+        .btn:active {
+            background-color: #39ff14;
+            color: #000;
+        }
+        #up { grid-column: 2; grid-row: 1; }
+        #left { grid-column: 1; grid-row: 2; }
+        #right { grid-column: 3; grid-row: 2; }
+        #down { grid-column: 2; grid-row: 3; }
+    </style>
+</head>
+<body>
+    <h1>Score: <span id="score">0</span></h1>
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+    
+    <div class="controls">
+        <div class="btn" id="up">↑</div>
+        <div class="btn" id="left">←</div>
+        <div class="btn" id="right">→</div>
+        <div class="btn" id="down">↓</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const gridSize = 15;
+        let tileCount = canvas.width / gridSize;
+        
+        let snake = [{x: 10, y: 10}];
+        let velocity = {x: 0, y: 0};
+        let apple = {x: 5, y: 5};
+        let score = 0;
+        let gameOver = false;
+
+        function gameLoop() {
+            if (gameOver) {
+                ctx.fillStyle = "#ff5733";
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Perdu ! Touche ici", canvas.width/2, canvas.height/2);
+                return;
+            }
+            update();
+            draw();
+            setTimeout(gameLoop, 120);
+        }
+
+        function update() {
+            let headX = snake[0].x + velocity.x;
+            let headY = snake[0].y + velocity.y;
+
+            if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+                gameOver = true;
+                return;
+            }
+
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === headX && snake[i].y === headY && i !== 0 && (velocity.x !== 0 || velocity.y !== 0)) {
+                    gameOver = true;
+                    return;
+                }
+            }
+
+            snake.unshift({x: headX, y: headY});
+
+            if (headX === apple.x && headY === apple.y) {
+                score++;
+                document.getElementById("score").innerText = score;
+                apple = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+            } else {
+                if(velocity.x !== 0 || velocity.y !== 0) snake.pop();
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = "#1e1e1e";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#ff5733";
+            ctx.beginPath();
+            ctx.arc(apple.x * gridSize + gridSize/2, apple.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.fillStyle = "#39ff14";
+            for (let i = 0; i < snake.length; i++) {
+                if(i === 0) ctx.fillStyle = "#5cff3d"; 
+                else ctx.fillStyle = "#39ff14";
+                ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 1, gridSize - 1);
+            }
+        }
+
+        function changeDirection(x, y) {
+            if (x !== 0 && velocity.x !== 0) return;
+            if (y !== 0 && velocity.y !== 0) return;
+            velocity = {x, y};
+        }
+
+        document.getElementById("up").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, -1); });
+        document.getElementById("down").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(0, 1); });
+        document.getElementById("left").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(-1, 0); });
+        document.getElementById("right").addEventListener("touchstart", (e) => { e.preventDefault(); changeDirection(1, 0); });
+
+        canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            if (gameOver) {
+                snake = [{x: 10, y: 10}];
+                velocity = {x: 0, y: 0};
+                score = 0;
+                document.getElementById("score").innerText = score;
+                gameOver = false;
+                gameLoop();
+            }
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
