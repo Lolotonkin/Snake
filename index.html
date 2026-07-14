@@ -32,6 +32,7 @@
 </head>
 <body>
 
+    <!-- ECRAN D'ACCUEIL -->
     <div id="screen-main" class="screen active">
         <h1>Arcade Mobile</h1>
         <div class="sig">Créé par Laurent</div>
@@ -39,6 +40,7 @@
         <button class="btn-menu" onclick="showScreen('screen-tir-menu')">Jeu de Tir (Castle Siege)</button>
     </div>
 
+    <!-- MENU JEU DE TIR -->
     <div id="screen-tir-menu" class="screen">
         <h1>Castle Siege</h1>
         <button class="btn-menu" onclick="startTir('1v1')">Mode 1 vs 1</button>
@@ -48,6 +50,7 @@
         <button class="back-btn" onclick="showScreen('screen-main')">Retour</button>
     </div>
 
+    <!-- ECRAN SNAKE -->
     <div id="screen-snake" class="screen">
         <div style="display:flex; justify-content:space-between; width:100%; max-width:320px;">
             <h2 style="color:#39ff14; margin-bottom:10px;">Score: <span id="snake-score">0</span></h2>
@@ -62,6 +65,7 @@
         <button class="back-btn" onclick="showScreen('screen-main')">Quitter Snake</button>
     </div>
 
+    <!-- ECRAN TIR -->
     <div id="screen-tir" class="screen">
         <div class="info-bar">
             <span id="hp1" style="color:#39ff14;">J1: 100%</span>
@@ -201,8 +205,9 @@
     function handlePointerDown(e) {
         if(isFiring || (turn !== 1 && tirMode !== '1v1')) return;
         e.preventDefault();
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let rect = cvsTir.getBoundingClientRect();
+        let clientX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        let clientY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
         dragStart = { x: clientX, y: clientY };
         isDragging = true;
     }
@@ -210,33 +215,36 @@
     function handlePointerMove(e) {
         if(!isDragging) return;
         e.preventDefault();
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let rect = cvsTir.getBoundingClientRect();
+        let clientX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        let clientY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
         
-        // Principe du lance-pierre (on tire à l'opposé du mouvement)
         let dx = dragStart.x - clientX;
         let dy = dragStart.y - clientY;
         
-        // Calcul de la puissance (limitée entre 20 et 100)
+        // Amplification : On multiplie par 1.5 pour atteindre la puissance max plus vite
         let dist = Math.sqrt(dx*dx + dy*dy);
-        aimPower = Math.min(100, Math.max(20, dist * 0.8));
+        aimPower = Math.min(100, Math.max(20, dist * 1.5)); 
         
-        // Calcul de l'angle
         let ang = Math.atan2(dy, dx) * 180 / Math.PI;
         
         if(turn === 1) {
-            if(ang < 0) ang = 0; if(ang > 90) ang = 90; // Bloque entre 0 (droite) et 90 (haut)
+            if(ang < 0) ang = 0; if(ang > 90) ang = 90;
             aimAngle = ang;
         } else {
-            if(ang > 0 && ang < 90) ang = 90; if(ang < 0) ang = 180; // Bloque pour tirer vers la gauche
+            if(ang > 0 && ang < 90) ang = 90; if(ang < 0) ang = 180;
             aimAngle = 180 - ang;
         }
+        
+        // Mise à jour visuelle de la puissance
+        document.getElementById('aim-inst').innerText = "Puissance: " + Math.round(aimPower) + "% - Angle: " + Math.round(aimAngle) + "°";
         drawTir();
     }
 
     function handlePointerUp(e) {
         if(!isDragging) return;
         isDragging = false;
+        document.getElementById('aim-inst').innerText = "Tir en cours...";
         drawTir();
         fireCannon(aimAngle, aimPower);
     }
