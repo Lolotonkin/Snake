@@ -74,7 +74,7 @@
         </div>
         <canvas id="tirCanvas" width="400" height="250"></canvas>
         <div class="tir-ui">
-            <p id="aim-inst" style="color:#39ff14;">Glisse le doigt pour viser !</p>
+            <p id="aim-inst" style="color:#39ff14;">Glisse le doigt vers l'avant !</p>
         </div>
         <button class="back-btn" onclick="showScreen('screen-main')">Quitter la partie</button>
     </div>
@@ -135,7 +135,6 @@
     const ctxT = cvsTir.getContext("2d");
     let tirMode, turn, hp1, hp2, traj1, traj2, isFiring;
     
-    // Variables pour la visée tactile
     let isDragging = false, dragStart = {x:0,y:0}, aimAngle = 45, aimPower = 50;
 
     function startTir(mode) {
@@ -152,10 +151,10 @@
         
         const inst = document.getElementById('aim-inst');
         if(turn === 1) {
-            inst.innerText = "Glisse le doigt pour viser ! (J1)"; inst.style.color = "#39ff14";
+            inst.innerText = "Glisse le doigt vers l'avant ! (J1)"; inst.style.color = "#39ff14";
         } else {
             if(tirMode === '1v1') {
-                inst.innerText = "Glisse le doigt pour viser ! (J2)"; inst.style.color = "#ff3366";
+                inst.innerText = "Glisse le doigt vers l'avant ! (J2)"; inst.style.color = "#ff3366";
             } else {
                 inst.innerText = "L'IA calcule son tir..."; inst.style.color = "#8f9cae";
                 setTimeout(iaTurn, 1000);
@@ -219,24 +218,27 @@
         let clientX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         let clientY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
         
-        let dx = dragStart.x - clientX;
-        let dy = dragStart.y - clientY;
+        // VISÉE VERS L'AVANT : On inverse la logique ici
+        let dx = clientX - dragStart.x; 
+        let dy = dragStart.y - clientY; 
         
-        // Amplification : On multiplie par 1.5 pour atteindre la puissance max plus vite
+        // Amplification
         let dist = Math.sqrt(dx*dx + dy*dy);
         aimPower = Math.min(100, Math.max(20, dist * 1.5)); 
         
         let ang = Math.atan2(dy, dx) * 180 / Math.PI;
         
+        // Sécurités d'angles pour ne pas tirer en arrière ou dans le sol
         if(turn === 1) {
-            if(ang < 0) ang = 0; if(ang > 90) ang = 90;
+            if(ang < 0) ang = 0; 
+            if(ang > 90) ang = 90;
             aimAngle = ang;
         } else {
-            if(ang > 0 && ang < 90) ang = 90; if(ang < 0) ang = 180;
+            if(ang >= 0 && ang < 90) ang = 90; 
+            if(ang < 0) ang = 180;
             aimAngle = 180 - ang;
         }
         
-        // Mise à jour visuelle de la puissance
         document.getElementById('aim-inst').innerText = "Puissance: " + Math.round(aimPower) + "% - Angle: " + Math.round(aimAngle) + "°";
         drawTir();
     }
@@ -249,7 +251,6 @@
         fireCannon(aimAngle, aimPower);
     }
 
-    // Écouteurs pour le Touch (Mobile) et la Souris (PC)
     cvsTir.addEventListener('touchstart', handlePointerDown, {passive: false});
     cvsTir.addEventListener('touchmove', handlePointerMove, {passive: false});
     window.addEventListener('touchend', handlePointerUp);
@@ -276,16 +277,16 @@
         let currentTraj = [];
         
         let interval = setInterval(() => {
-            x += vx; y += vy; vy += 0.25; // Gravité
+            x += vx; y += vy; vy += 0.25; 
             currentTraj.push({x, y});
             drawTir();
             ctxT.fillStyle = 'white'; ctxT.fillRect(x, y, 4, 4);
 
             let hit = false;
-            if(y > 250) hit = true; // Sol
-            if(y > 250 - (50 - Math.abs(x - 200))*3 && x > 150 && x < 250) hit = true; // Montagne
-            if(x > 350 && x < 380 && y > 250 - (hp2*0.6)) { hit = true; if(turn===1) hp2 -= 25; } // Touche J2
-            if(x > 20 && x < 50 && y > 250 - (hp1*0.6)) { hit = true; if(turn===2) hp1 -= 25; } // Touche J1
+            if(y > 250) hit = true; 
+            if(y > 250 - (50 - Math.abs(x - 200))*3 && x > 150 && x < 250) hit = true; 
+            if(x > 350 && x < 380 && y > 250 - (hp2*0.6)) { hit = true; if(turn===1) hp2 -= 25; } 
+            if(x > 20 && x < 50 && y > 250 - (hp1*0.6)) { hit = true; if(turn===2) hp1 -= 25; } 
             
             if(hit || x < -50 || x > 450) {
                 clearInterval(interval);
