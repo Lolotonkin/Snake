@@ -3,92 +3,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcade - Laurent</title>
+    <title>Arcade Mobile - Laurent</title>
     <style>
-        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; touch-action: none; }
-        body { background: #050508; color: #39ff14; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 20px; }
-        .active { display: flex; }
-        canvas { background: #050508; border: 2px solid #39ff14; border-radius: 8px; box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
-        .btn-menu { background: transparent; border: 2px solid #39ff14; color: #39ff14; padding: 15px; width: 250px; margin: 10px; cursor: pointer; font-weight: bold; }
-        .controls { display: grid; grid-template-columns: 80px 80px; gap: 20px; margin-top: 20px; }
-        .btn-c { width: 80px; height: 80px; border: 2px solid #39ff14; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        .btn-c:active { background: #39ff14; color: #050508; }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+        body {
+            background: #050508;
+            color: #39ff14;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+        }
+        #menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            gap: 20px;
+        }
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #39ff14;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .game-ui {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            justify-content: space-between;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 360px;
+            padding: 5px 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 3 / 4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            background: #000;
+            border: 3px solid #39ff14;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            width: 100%;
+            height: 100%;
+        }
+        .btn {
+            background: transparent;
+            border: 2px solid #39ff14;
+            color: #39ff14;
+            padding: 15px 30px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
+            width: 260px;
+            transition: all 0.1s ease;
+        }
+        .btn:active {
+            background: #39ff14;
+            color: #050508;
+            box-shadow: 0 0 15px #39ff14;
+        }
+        .controls-area {
+            width: 100%;
+            max-width: 360px;
+            height: 130px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        /* Layouts de touches */
+        .dpad-layout {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 150px;
+            height: 130px;
+        }
+        .lr-layout {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            gap: 40px;
+        }
+        .ctrl-btn {
+            background: transparent;
+            border: 2px solid #39ff14;
+            border-radius: 12px;
+            color: #39ff14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
+            touch-action: none;
+        }
+        .ctrl-btn:active {
+            background: #39ff14;
+            color: #050508;
+            box-shadow: 0 0 15px #39ff14;
+        }
+        .empty-space {
+            visibility: hidden;
+        }
+        #btn-back {
+            width: 100%;
+            max-width: 360px;
+            padding: 8px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="main" class="screen active">
-        <h1>ARCADE</h1>
-        <button class="btn-menu" onclick="loadGame('snake')">SNAKE NÉON</button>
-        <button class="btn-menu" onclick="loadGame('tir')">TIR PRECIS</button>
-        <button class="btn-menu" onclick="loadGame('jump')">VERTICAL JUMP</button>
-    </div>
+<div id="menu">
+    <div class="title">ARCADE RETRO</div>
+    <div class="btn" id="play-snake">SNAKE NÉON</div>
+    <div class="btn" id="play-jump">VERTICAL JUMP</div>
+    <div class="btn" id="play-tir">TIR PRÉCIS</div>
+</div>
 
-    <div id="game-screen" class="screen">
-        <h2 id="score-display">Score: 0</h2>
-        <canvas id="canvas" width="300" height="400"></canvas>
-        <div id="ctrl" class="controls"></div>
-        <button class="btn-menu" style="margin-top:20px; padding:5px;" onclick="location.reload()">MENU</button>
+<div id="game" class="game-ui">
+    <div class="header">
+        <span id="label-info">Score:</span>
+        <span id="score-val">0</span>
     </div>
+    <div id="canvas-container">
+        <canvas id="cvs" width="300" height="400"></canvas>
+    </div>
+    <div id="ctrls" class="controls-area"></div>
+    <div class="btn" id="btn-back">RETOUR AU MENU</div>
+</div>
 
 <script>
-    const cvs = document.getElementById("canvas");
-    const ctx = cvs.getContext("2d");
-    const scoreEl = document.getElementById("score-display");
-    const ctrlEl = document.getElementById("ctrl");
+    const cvs = document.getElementById('cvs');
+    const ctx = cvs.getContext('2d');
+    const scoreVal = document.getElementById('score-val');
+    const labelInfo = document.getElementById('label-info');
+    const ctrls = document.getElementById('ctrls');
+    
+    let activeGame = null;
+    let gameLoop = null;
 
-    function loadGame(type) {
-        document.getElementById('main').classList.remove('active');
-        document.getElementById('game-screen').classList.add('active');
-        if(type === 'snake') initSnake();
-        if(type === 'jump') initJump();
-        if(type === 'tir') initTir();
+    // Navigation
+    document.getElementById('play-snake').addEventListener('click', () => start('snake'));
+    document.getElementById('play-jump').addEventListener('click', () => start('jump'));
+    document.getElementById('play-tir').addEventListener('click', () => start('tir'));
+    document.getElementById('btn-back').addEventListener('click', () => location.reload());
+
+    function start(gameType) {
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('game').style.display = 'flex';
+        if (gameLoop) clearInterval(gameLoop);
+        activeGame = gameType;
+        
+        if (gameType === 'snake') initSnake();
+        else if (gameType === 'jump') initJump();
+        else if (gameType === 'tir') initTir();
     }
 
-    // --- 1. SNAKE NÉON ---
+    // Helper pour attacher des contrôles tactiles sans délai
+    function bindTouch(elementId, callback) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                callback();
+            }, { passive: false });
+        }
+    }
+
+    // ==========================================
+    // 1. SNAKE NÉON
+    // ==========================================
     function initSnake() {
-        let s = [{x:10,y:10}], v = {x:1,y:0}, f = {x:15,y:15}, score=0;
-        ctrlEl.innerHTML = '<div class="btn-c" onclick="dirSnake(0,-1)">▲</div><div></div><div class="btn-c" onclick="dirSnake(-1,0)">◀</div><div class="btn-c" onclick="dirSnake(1,0)">▶</div><div></div><div class="btn-c" onclick="dirSnake(0,1)">▼</div>';
-        window.dirSnake = (x,y) => { if(Math.abs(v.x)!==Math.abs(x)) v = {x,y}; };
-        setInterval(() => {
-            let h = {x: s[0].x+v.x, y: s[0].y+v.y};
-            s.unshift(h);
-            if(h.x===f.x && h.y===f.y) { score++; f={x:Math.floor(Math.random()*20), y:Math.floor(Math.random()*20)}; } else s.pop();
-            ctx.fillStyle="#050508"; ctx.fillRect(0,0,300,400);
-            ctx.strokeStyle="#39ff14"; ctx.lineWidth=2;
-            s.forEach((p,i) => { ctx.strokeRect(p.x*15, p.y*15, 14, 14); });
-            ctx.fillStyle="#ff00ff"; ctx.fillRect(f.x*15, f.y*15, 14, 14);
-            scoreEl.innerText = "Score: " + score;
-        }, 150);
-    }
+        labelInfo.innerText = "Score:";
+        scoreVal.innerText = "0";
 
-    // --- 2. VERTICAL JUMP (Niveaux infinis) ---
-    function initJump() {
-        let player = {x:140, y:350, vy:0}, plats = [{x:100, y:380, w:80}], score=0, camY=0;
-        ctrlEl.innerHTML = '<div class="btn-c" onclick="player.vx=-5">◀</div><div class="btn-c" onclick="player.vx=5">▶</div>';
-        player.vx = 0;
-        setInterval(() => {
-            player.vy += 0.3; player.y += player.vy; player.x += player.vx;
-            if(player.y < 200) { camY += (200 - player.y); player.y = 200; score++; }
-            plats.forEach(p => {
-                if(player.vx>0 && player.y+20>p.y && player.y+20<p.y+10 && player.x+10>p.x && player.x<p.x+p.w) player.vy=-8;
+        let snake = [{x: 10, y: 13}];
+        let dir = {x: 0, y: -1};
+        let nextDir = {x: 0, y: -1};
+        let food = {x: 5, y: 5};
+        let score = 0;
+        const gridX = 20;
+        const gridY = 26;
+        const tileSize = 15;
+
+        // Génère la nourriture en évitant le corps du serpent
+        function respawnFood() {
+            let valid = false;
+            while (!valid) {
+                food.x = Math.floor(Math.random() * gridX);
+                food.y = Math.floor(Math.random() * gridY);
+                valid = !snake.some(p => p.x === food.x && p.y === food.y);
+            }
+        }
+        respawnFood();
+
+        // Ajout des contrôles DPAD physiques
+        ctrls.innerHTML = `
+            <div class="dpad-layout">
+                <div class="empty-space"></div>
+                <div class="ctrl-btn" id="s-up">▲</div>
+                <div class="empty-space"></div>
+                <div class="ctrl-btn" id="s-left">◀</div>
+                <div class="empty-space"></div>
+                <div class="ctrl-btn" id="s-right">▶</div>
+                <div class="empty-space"></div>
+                <div class="ctrl-btn" id="s-down">▼</div>
+                <div class="empty-space"></div>
+            </div>
+        `;
+
+        bindTouch('s-up', () => { if (dir.y === 0) nextDir = {x: 0, y: -1}; });
+        bindTouch('s-down', () => { if (dir.y === 0) nextDir = {x: 0, y: 1}; });
+        bindTouch('s-left', () => { if (dir.x === 0) nextDir = {x: -1, y: 0}; });
+        bindTouch('s-right', () => { if (dir.x === 0) nextDir = {x: 1, y: 0}; });
+
+        gameLoop = setInterval(() => {
+            dir = nextDir;
+            let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+            // Mort si collision murs
+            if (head.x < 0 || head.x >= gridX || head.y < 0 || head.y >= gridY) {
+                clearInterval(gameLoop);
+                alert("GAME OVER ! Score final : " + score);
+                return start('snake');
+            }
+
+            // Mort si auto-collision
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                clearInterval(gameLoop);
+                alert("GAME OVER ! Score final : " + score);
+                return start('snake');
+            }
+
+            snake.unshift(head);
+
+            // Mange la pomme
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreVal.innerText = score;
+                respawnFood();
+            } else {
+                snake.pop();
+            }
+
+            // Dessin
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            // Pomme Néon rouge
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#ff0055';
+            ctx.fillStyle = '#ff0055';
+            ctx.fillRect(food.x * tileSize + 1, food.y * tileSize + 1, tileSize - 2, tileSize - 2);
+
+            // Serpent Néon vert
+            ctx.shadowColor = '#39ff14';
+            ctx.fillStyle = '#39ff14';
+            snake.forEach((seg, i) => {
+                ctx.fillRect(seg.x * tileSize + 1, seg.y * tileSize + 1, tileSize - 2, tileSize - 2);
             });
-            if(plats.length < 20) plats.push({x:Math.random()*220, y:Math.random()*-500 - camY, w:60});
-            ctx.fillStyle="#050508"; ctx.fillRect(0,0,300,400);
-            ctx.fillStyle="#39ff14"; ctx.fillRect(player.x, player.y - camY + 200, 14, 14);
-            plats.forEach(p => ctx.fillRect(p.x, p.y - camY + 200, p.w, 10));
-            scoreEl.innerText = "Hauteur: " + Math.floor(score/10);
-        }, 30);
+            ctx.shadowBlur = 0; // Reset
+        }, 130);
     }
 
-    // --- 3. TIR (Contrôle tactile amélioré) ---
+    // ==========================================
+    // 2. VERTICAL JUMP (Niveaux de 20 Plateformes)
+    // ==========================================
+    function initJump() {
+        labelInfo.innerText = "Niveau 1 - Plateformes:";
+        scoreVal.innerText = "0/20";
+
+        let currentLevel = 1;
+        let score = 0; 
+        let maxPlatformReached = 0;
+
+        let player = {
+            x: 140, y: 350,
+            w: 16, h: 16,
+            vx: 0, vy: 0
+        };
+
+        let platforms = [];
+        let camY = 0;
+
+        function buildLevel(lvl) {
+            platforms = [];
+            let startY = 370;
+            // Base
+            platforms.push({x: 0, y: startY, w: 300, isGold: false});
+            
+            // On génère 19 plateformes supplémentaires vers le haut
+            for (let i = 1; i <= 19; i++) {
+                let spacing = 70 + Math.min(lvl * 3, 20); // Les espaces s'agrandissent légèrement
+                let width = Math.max(45, 90 - (lvl * 6));   // Les plateformes rétrécissent
+                let px = Math.random() * (300 - width);
+                let py = startY - (i * spacing);
+                
+                platforms.push({
+                    x: px,
+                    y: py,
+                    w: width,
+                    isGold: (i === 19) // La 20e plateforme est en OR
+                });
+            }
+            player.x = 140;
+            player.y = 330;
+            player.vy = -6; // Petit élan initial
+            player.vx = 0;
+            camY = 0;
+            maxPlatformReached = 0;
+            labelInfo.innerText = `Niveau ${currentLevel} - Grimpé:`;
+            scoreVal.innerText = `0/19`;
+        }
+
+        buildLevel(currentLevel);
+
+        ctrls.innerHTML = `
+            <div class="lr-layout">
+                <div class="ctrl-btn" id="j-left" style="flex:1; padding: 25px;">◀ GAUCHE</div>
+                <div class="ctrl-btn" id="j-right" style="flex:1; padding: 25px;">DROITE ▶</div>
+            </div>
+        `;
+
+        // Événements tactiles réactifs et continus
+        let movingLeft = false;
+        let movingRight = false;
+
+        const btnLeft = document.getElementById('j-left');
+        const btnRight = document.getElementById('j-right');
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); movingLeft = true; }, { passive: false });
+        btnLeft.addEventListener('touchend', () => { movingLeft = false; });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); movingRight = true; }, { passive: false });
+        btnRight.addEventListener('touchend', () => { movingRight = false; });
+
+        gameLoop = setInterval(() => {
+            // Gestion déplacements fluides
+            if (movingLeft) player.vx = -4.5;
+            else if (movingRight) player.vx = 4.5;
+            else player.vx = 0;
+
+            // Physique
+            player.vy += 0.35; // Gravité
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Limites latérales de l'écran
+            if (player.x < 0) player.x = 0;
+            if (player.x > 300 - player.w) player.x = 300 - player.w;
+
+            // Caméra fluide qui suit la montée du joueur
+            if (player.y - camY < 180) {
+                camY += ((player.y - camY) - 180) * 0.1;
+            } else if (player.y - camY > 300) {
+                camY += ((player.y - camY) - 300) * 0.1;
+            }
+
+            // Gestion des collisions avec les plateformes (uniquement en descendant)
+            platforms.forEach((plat, index) => {
+                if (player.vy > 0 &&
+                    player.y + player.h >= plat.y &&
+                    player.y + player.h <= plat.y + 10 &&
+                    player.x + player.w >= plat.x &&
+                    player.x <= plat.x + plat.w) {
+                    
+                    player.vy = -8.5; // Impulsion de saut
+                    
+                    if (index > maxPlatformReached) {
+                        maxPlatformReached = index;
+                        scoreVal.innerText = `${maxPlatformReached}/19`;
+                    }
+
+                    // Condition de Victoire de niveau : Bloc Doré "FIN"
+                    if (plat.isGold) {
+                        clearInterval(gameLoop);
+                        alert(`BRAVO ! Niveau ${currentLevel} terminé !`);
+                        currentLevel++;
+                        start('jump'); // Relance sur le niveau supérieur
+                    }
+                }
+            });
+
+            // Condition de défaite : Chute sous l'écran
+            if (player.y - camY > 400) {
+                clearInterval(gameLoop);
+                alert("CHUTE ! Recommence le niveau !");
+                start('jump');
+            }
+
+            // Dessin
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            // Dessiner les plateformes par rapport à la caméra
+            platforms.forEach((plat) => {
+                let renderY = plat.y - camY;
+                if (renderY > -50 && renderY < 450) {
+                    if (plat.isGold) {
+                        // Dessiner le Bloc Doré FIN (exactement comme sur l'image)
+                        ctx.fillStyle = '#FFD700';
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#FFD700';
+                        ctx.fillRect(plat.x, renderY, plat.w, 10);
+                        
+                        // Bloc "FIN"
+                        ctx.fillStyle = '#FFE135';
+                        ctx.fillRect(plat.x + (plat.w / 2) - 15, renderY - 24, 30, 24);
+                        ctx.fillStyle = '#000000';
+                        ctx.font = 'bold 10px Courier New';
+                        ctx.textAlign = 'center';
+                        ctx.shadowBlur = 0;
+                        ctx.fillText("FIN", plat.x + (plat.w / 2), renderY - 9);
+                    } else {
+                        // Plateforme classique néon vert/gris
+                        ctx.fillStyle = '#1c3d18';
+                        ctx.fillRect(plat.x, renderY, plat.w, 10);
+                        ctx.strokeStyle = '#39ff14';
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeRect(plat.x, renderY, plat.w, 10);
+                    }
+                }
+            });
+
+            // Dessiner le Joueur (Bleu lumineux)
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillStyle = '#00ffff';
+            ctx.fillRect(player.x, player.y - camY, player.w, player.h);
+            ctx.shadowBlur = 0;
+
+        }, 1000 / 60); // 60 FPS
+    }
+
+    // ==========================================
+    // 3. TIR PRÉCIS (Castle Siege - Entièrement Jouable)
+    // ==========================================
     function initTir() {
-        let power=0;
-        ctrlEl.innerHTML = '<div class="btn-c" style="width:160px; border-radius:10px" id="fire">TIRE</div>';
-        const btn = document.getElementById('fire');
-        btn.addEventListener('touchstart', () => { power=0; let int=setInterval(()=>power++, 10); btn.onmouseup = () => clearInterval(int); });
-        btn.addEventListener('touchend', () => { alert("Puissance finale: " + power); });
+        labelInfo.innerText = "Vies: ❤️❤️❤️ | Score:";
+        scoreVal.innerText = "0";
+
+        let score = 0;
+        let lives = 3;
+        let playerX = 140;
+        const playerY = 360;
+        const playerW = 24;
+        
+        let lasers = [];
+        let enemies = [];
+        let shootTimer = 0;
+
+        ctrls.innerHTML = `
+            <div class="lr-layout">
+                <div class="ctrl-btn" id="t-left" style="flex:1; padding:25px;">◀ GAUCHE</div>
+                <div class="ctrl-btn" id="t-right" style="flex:1; padding:25px;">DROITE ▶</div>
+            </div>
+        `;
+
+        let moveLeft = false;
+        let moveRight = false;
+
+        const btnLeft = document.getElementById('t-left');
+        const btnRight = document.getElementById('t-right');
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft = true; }, { passive: false });
+        btnLeft.addEventListener('touchend', () => { moveLeft = false; });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight = true; }, { passive: false });
+        btnRight.addEventListener('touchend', () => { moveRight = false; });
+
+        // On permet également le glissement du doigt directement sur le canvas pour viser ultra facilement !
+        cvs.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            let rect = cvs.getBoundingClientRect();
+            let touchX = e.touches[0].clientX - rect.left;
+            // On convertit les coordonnées d'affichage réelles de l'écran vers la logique interne du canvas (300px)
+            let ratio = 300 / rect.width;
+            playerX = (touchX * ratio) - (playerW / 2);
+            if (playerX < 0) playerX = 0;
+            if (playerX > 300 - playerW) playerX = 300 - playerW;
+        }, { passive: false });
+
+        gameLoop = setInterval(() => {
+            // Déplacements par touches
+            if (moveLeft) playerX -= 4.5;
+            if (moveRight) playerX += 4.5;
+            if (playerX < 0) playerX = 0;
+            if (playerX > 300 - playerW) playerX = 300 - playerW;
+
+            // Tir Automatique toutes les 15 frames (~250ms)
+            shootTimer++;
+            if (shootTimer >= 15) {
+                lasers.push({x: playerX + (playerW / 2) - 2, y: playerY});
+                shootTimer = 0;
+            }
+
+            // Génération dynamique des ennemis
+            if (Math.random() < 0.03) {
+                enemies.push({
+                    x: Math.random() * 280,
+                    y: -15,
+                    w: 16,
+                    h: 16,
+                    speed: 1.5 + Math.random() * 2 // Vitesses aléatoires
+                });
+            }
+
+            // Mise à jour des Lasers
+            lasers.forEach((laser, lIndex) => {
+                laser.y -= 6;
+                if (laser.y < 0) lasers.splice(lIndex, 1);
+            });
+
+            // Mise à jour des Ennemis
+            enemies.forEach((enemy, eIndex) => {
+                enemy.y += enemy.speed;
+
+                // Si l'ennemi passe la ligne de défense (en bas de l'écran)
+                if (enemy.y > 380) {
+                    enemies.splice(eIndex, 1);
+                    lives--;
+                    let heartString = "❤️".repeat(lives);
+                    labelInfo.innerText = `Vies: ${heartString} | Score:`;
+                    if (lives <= 0) {
+                        clearInterval(gameLoop);
+                        alert("GAME OVER ! Score final : " + score);
+                        return start('tir');
+                    }
+                }
+            });
+
+            // Détection des impacts Lasers / Ennemis
+            lasers.forEach((laser, lIndex) => {
+                enemies.forEach((enemy, eIndex) => {
+                    if (laser.x >= enemy.x &&
+                        laser.x <= enemy.x + enemy.w &&
+                        laser.y >= enemy.y &&
+                        laser.y <= enemy.y + enemy.h) {
+                        
+                        // Impact ! Suppression laser + ennemi
+                        lasers.splice(lIndex, 1);
+                        enemies.splice(eIndex, 1);
+                        score += 10;
+                        scoreVal.innerText = score;
+                    }
+                });
+            });
+
+            // Dessin
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            // Ligne de défense rouge
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, 380);
+            ctx.lineTo(300, 380);
+            ctx.stroke();
+
+            // Canon Joueur (Triangle Néon Vert)
+            ctx.fillStyle = '#39ff14';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#39ff14';
+            ctx.beginPath();
+            ctx.moveTo(playerX + (playerW / 2), playerY);
+            ctx.lineTo(playerX, playerY + 16);
+            ctx.lineTo(playerX + playerW, playerY + 16);
+            ctx.closePath();
+            ctx.fill();
+
+            // Dessiner les lasers (Jaune Néon)
+            ctx.fillStyle = '#ffff00';
+            ctx.shadowColor = '#ffff00';
+            lasers.forEach(laser => {
+                ctx.fillRect(laser.x, laser.y, 4, 10);
+            });
+
+            // Dessiner les ennemis (Mauve/Magenta Néon)
+            ctx.fillStyle = '#ff00ff';
+            ctx.shadowColor = '#ff00ff';
+            enemies.forEach(enemy => {
+                ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+            });
+            ctx.shadowBlur = 0;
+
+        }, 1000 / 60); // 60 FPS
     }
 </script>
 </body>
